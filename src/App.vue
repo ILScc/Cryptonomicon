@@ -1,8 +1,31 @@
 <template>
   <body>
     <div class="container mx-auto flex flex-col items-center bg-gray-100 p-4">
+      <!-- <div
+        class="fixed w-100 h-100 opacity-80 bg-purple-800 inset-0 z-50 flex items-center justify-center"
+      >
+        <svg
+          class="animate-spin -ml-1 mr-3 h-12 w-12 text-white"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <circle
+            class="opacity-25"
+            cx="12"
+            cy="12"
+            r="10"
+            stroke="currentColor"
+            stroke-width="4"
+          ></circle>
+          <path
+            class="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+          ></path>
+        </svg>
+      </div> -->
       <div class="container">
-        <div class="w-full my-4"></div>
         <section>
           <div class="flex">
             <div class="max-w-xs">
@@ -22,12 +45,37 @@
                   placeholder="Например DOGE"
                 />
               </div>
+              <div
+                class="flex bg-white shadow-md p-1 rounded-md shadow-md flex-wrap"
+              >
+                <span
+                  class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
+                >
+                  BTC
+                </span>
+                <span
+                  class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
+                >
+                  DOGE
+                </span>
+                <span
+                  class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
+                >
+                  BCH
+                </span>
+                <span
+                  class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
+                >
+                  CHD
+                </span>
+              </div>
+              <div class="text-sm text-red-600">Такой тикер уже добавлен</div>
             </div>
           </div>
           <button
             @click="add"
             type="button"
-            class=" my-4 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+            class="my-4 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
           >
             <!-- Heroicon name: solid/mail -->
             <svg
@@ -143,8 +191,25 @@ export default {
       tickers: [],
       sel: null,
       graph: [],
+      listOfCryptos: {},
     };
   },
+  created() {
+    const tickersData = localStorage.getItem("cryptos-list");
+    if (tickersData) {
+      this.tickers = JSON.parse(tickersData);
+      this.tickers.forEach((ticker) => {
+        this.subscribeToUpdate(ticker.name);
+      });
+    }
+  }, 
+  // async getAllCryptos() {
+  //   const request = await fetch(
+  //     "https://min-api.cryptocompare.com/data/all/coinlist?summary=true"
+  //   );
+  //   const response = await request.json();
+  //   this.listOfCryptos = response.Data;
+  // },
 
   methods: {
     add() {
@@ -153,20 +218,24 @@ export default {
         price: "-",
       };
       this.tickers.push(currentTicker);
+      this.subscribeToUpdate(currentTicker.name);
 
+      localStorage.setItem("cryptos-list", JSON.stringify(this.tickers));
+
+      this.ticker = "";
+    },
+    subscribeToUpdate(tickerName) {
       setInterval(async () => {
         const request = await fetch(
-          `https://min-api.cryptocompare.com/data/price?fsym=${currentTicker.name}&tsyms=USD&api_key={21962b7788c5061a188899f972d571ba2df8c6369e9366adc81be638f0e733c3}`
+          `https://min-api.cryptocompare.com/data/price?fsym=${tickerName}&tsyms=USD&api_key={21962b7788c5061a188899f972d571ba2df8c6369e9366adc81be638f0e733c3}`
         );
         const data = await request.json();
-        this.tickers.find((t) => t.name === currentTicker.name).price =
+        this.tickers.find((t) => t.name === tickerName).price =
           data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(3);
-        //currentTicker.price = data.USD;
-        if (this.sel?.name === currentTicker.name) {
+        if (this.sel?.name === tickerName) {
           this.graph.push(data.USD);
         }
       }, 4000);
-      this.ticker = "";
     },
 
     deleteTicker(tickerToDelete) {
