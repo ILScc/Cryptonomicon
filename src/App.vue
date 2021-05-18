@@ -203,6 +203,7 @@
 </template>
 
 <script>
+import { subscribeToTicker, unsubscribeFromTicker } from "./api";
 export default {
   name: "App",
 
@@ -223,6 +224,7 @@ export default {
     const windowData = Object.fromEntries(
       new URL(window.location).searchParams.entries()
     );
+
     const VALID_KEYS = ["filter", "page"];
     VALID_KEYS.forEach((key) => {
       if (windowData[key]) {
@@ -235,7 +237,9 @@ export default {
     if (tickersData) {
       this.tickers = JSON.parse(tickersData);
       this.tickers.forEach((ticker) => {
-        this.subscribeToUpdates(ticker.name);
+        subscribeToTicker(ticker.name, (newPrice) => {
+          this.updateTicker(ticker.name, newPrice);
+        });
       });
     }
   },
@@ -284,24 +288,22 @@ export default {
         price: "-",
       };
       this.tickers = [...this.tickers, currentTicker];
-
+      this.ticker = "";
       this.filter = "";
-      this.subscribeToUpdates(currentTicker.name);
+      subscribeToTicker(currentTicker.name, (newPrice) => {
+        this.updateTicker(currentTicker.name, newPrice);
+      });
     },
 
-    subscribeToUpdates(tickerName) {
-      setInterval(async () => {
-        const request = await fetch(
-          `https://min-api.cryptocompare.com/data/price?fsym=${tickerName}&tsyms=USD&api_key=05b70e141ac3139ce1d7f82c858b450549bfa59a896f1b4782ba72a69e7bfafd`
-        );
-        const data = await request.json();
-        this.tickers.find((t) => t.name === tickerName).price =
-          data.USD > 1 ? data.USD?.toFixed(2) : data.USD?.toPrecision(3);
-        if (this.selectedTicker?.name === tickerName) {
-          this.graph.push(data.USD);
-        }
-      }, 5000);
-      this.ticker = "";
+    updateTicker(tickerName, price) {
+      this.tickers
+        .filter((t) => t.name === tickerName)
+        .forEach((t) => {
+          if (t === this.selectedTicker) {
+            this.graph.push(price);
+          }
+          t.price = price;
+        });
     },
 
     deleteTicker(tickerToDelete) {
@@ -309,6 +311,7 @@ export default {
       if (this.selectedTicker === tickerToDelete) {
         this.selectedTicker = null;
       }
+      unsubscribeFromTicker(tickerToDelete.name);
     },
 
     select(ticker) {
