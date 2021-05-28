@@ -69,7 +69,9 @@
                   CHD
                 </span>
               </div>
-              <div class="text-sm text-red-600">Такой тикер уже добавлен</div>
+              <div v-if="invalidTicker" class="text-sm text-red-600">
+                Такой тикер уже добавлен
+              </div>
             </div>
           </div>
           <button
@@ -203,7 +205,7 @@
 </template>
 
 <script>
-import { subscribeToTicker, unsubscribeFromTicker } from "./api";
+import { loadAllCoins, subscribeToTicker, unsubscribeFromTicker } from "./api";
 export default {
   name: "App",
 
@@ -216,6 +218,9 @@ export default {
       graph: [],
       page: 1,
 
+      invalidTicker: false,
+
+      listOfCoinsSymbols: [],
       selectedTicker: null,
     };
   },
@@ -242,8 +247,19 @@ export default {
         });
       });
     }
+    loadAllCoins().then((value) => {
+      const coinsSymbols = Object.values(value).map((obj) => {
+        return obj.Symbol;
+      });
+      this.listOfCoinsSymbols = coinsSymbols;
+      console.log(Array.from(this.listOfCoinsSymbols));
+    });
   },
   computed: {
+    showAppropriteTickersToEnter() {
+      return Array.from(this.listOfCoinsSymbols);
+    },
+    //TODO:make method of helping user to fill the  ticker adding
     startIndex() {
       return (this.page - 1) * 6;
     },
@@ -287,12 +303,20 @@ export default {
         name: this.ticker,
         price: "-",
       };
-      this.tickers = [...this.tickers, currentTicker];
+      if (!this.validateTicker(currentTicker).length) {
+        this.tickers = [...this.tickers, currentTicker];
+        this.invalidTicker = false;
+      } else {
+        this.invalidTicker = true;
+      }
       this.ticker = "";
       this.filter = "";
       subscribeToTicker(currentTicker.name, (newPrice) => {
         this.updateTicker(currentTicker.name, newPrice);
       });
+    },
+    validateTicker(tickerToValidate) {
+      return this.tickers.filter((t) => t.name === tickerToValidate.name);
     },
 
     updateTicker(tickerName, price) {
