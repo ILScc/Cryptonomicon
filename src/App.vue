@@ -46,30 +46,21 @@
                 />
               </div>
               <div
+                v-if="ticker"
                 class="flex bg-white shadow-md p-1 rounded-md shadow-md flex-wrap"
               >
                 <span
+                  v-for="symbol in showAppropriteTickersToEnter"
+                  @click="fillInput(symbol)"
+                  :key="symbol.index"
                   class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
                 >
-                  BTC
-                </span>
-                <span
-                  class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
-                >
-                  DOGE
-                </span>
-                <span
-                  class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
-                >
-                  BCH
-                </span>
-                <span
-                  class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
-                >
-                  CHD
+                  {{ symbol }}
                 </span>
               </div>
-              <div class="text-sm text-red-600">Такой тикер уже добавлен</div>
+              <div v-if="invalidTicker" class="text-sm text-red-600">
+                Такой тикер уже добавлен
+              </div>
             </div>
           </div>
           <button
@@ -206,7 +197,7 @@
 </template>
 
 <script>
-import { subscribeToTicker, unsubscribeFromTicker } from "./api";
+import { loadAllCoins, subscribeToTicker, unsubscribeFromTicker } from "./api";
 export default {
   name: "App",
 
@@ -220,6 +211,9 @@ export default {
       page: 1,
       maxGraphElements: 1,
 
+      invalidTicker: false,
+
+      listOfCoinsSymbols: [],
       selectedTicker: null,
     };
   },
@@ -246,6 +240,12 @@ export default {
         });
       });
     }
+    loadAllCoins().then((value) => {
+      const coinsSymbols = Object.values(value).map((obj) => {
+        return obj.Symbol;
+      });
+      this.listOfCoinsSymbols = coinsSymbols;
+    });
   },
   mounted() {
     window.addEventListener("resize", this.calculateMaxGraphElements);
@@ -254,6 +254,14 @@ export default {
     window.removeEventListener("resize", this.calculateMaxGraphElements);
   },
   computed: {
+    showAppropriteTickersToEnter() {
+      if (!this.ticker) {
+        return;
+      }
+      return Array.from(this.listOfCoinsSymbols)
+        .filter((coinSymbol) => coinSymbol.includes(this.ticker))
+        .slice(0, 4);
+    },
     startIndex() {
       return (this.page - 1) * 6;
     },
@@ -299,12 +307,23 @@ export default {
       this.maxGraphElements = this.$refs.graph.clientWidth / 38;
     },
 
+    fillInput(clickedTicker) {
+      this.ticker = clickedTicker;
+    },
     add() {
+      if (!this.ticker) {
+        return;
+      }
       const currentTicker = {
         name: this.ticker,
         price: "-",
       };
-      this.tickers = [...this.tickers, currentTicker];
+      if (!this.validateTicker(currentTicker).length) {
+        this.tickers = [...this.tickers, currentTicker];
+        this.invalidTicker = false;
+      } else {
+        this.invalidTicker = true;
+      }
       this.ticker = "";
       this.filter = "";
       subscribeToTicker(currentTicker.name, (newPrice) => {
@@ -316,6 +335,10 @@ export default {
         return price;
       }
       return price > 1 ? price.toFixed(2) : price.toPrecision(2);
+    },
+
+    validateTicker(tickerToValidate) {
+      return this.tickers.filter((t) => t.name === tickerToValidate.name);
     },
 
     updateTicker(tickerName, price) {

@@ -51,6 +51,14 @@ function unsubscribeFromTickerOnWs(ticker) {
   });
 }
 
+export const loadAllCoins = async () => {
+  const coinsData = await fetch(
+    "https://min-api.cryptocompare.com/data/all/coinlist?summary=true"
+  );
+  const allCoins = await coinsData.json();
+  return allCoins.Data;
+};
+
 export const subscribeToTicker = (ticker, cb) => {
   const subscribers = tickersHandlers.get(ticker) || [];
   tickersHandlers.set(ticker, [...subscribers, cb]);
