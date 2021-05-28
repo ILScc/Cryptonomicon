@@ -46,27 +46,16 @@
                 />
               </div>
               <div
+                v-if="ticker"
                 class="flex bg-white shadow-md p-1 rounded-md shadow-md flex-wrap"
               >
                 <span
+                  v-for="symbol in showAppropriteTickersToEnter"
+                  @click="fillInput(symbol)"
+                  :key="symbol.index"
                   class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
                 >
-                  BTC
-                </span>
-                <span
-                  class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
-                >
-                  DOGE
-                </span>
-                <span
-                  class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
-                >
-                  BCH
-                </span>
-                <span
-                  class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
-                >
-                  CHD
+                  {{ symbol }}
                 </span>
               </div>
               <div v-if="invalidTicker" class="text-sm text-red-600">
@@ -252,14 +241,17 @@ export default {
         return obj.Symbol;
       });
       this.listOfCoinsSymbols = coinsSymbols;
-      console.log(Array.from(this.listOfCoinsSymbols));
     });
   },
   computed: {
     showAppropriteTickersToEnter() {
-      return Array.from(this.listOfCoinsSymbols);
+      if (!this.ticker) {
+        return;
+      }
+      return Array.from(this.listOfCoinsSymbols)
+        .filter((coinSymbol) => coinSymbol.includes(this.ticker))
+        .slice(0, 4);
     },
-    //TODO:make method of helping user to fill the  ticker adding
     startIndex() {
       return (this.page - 1) * 6;
     },
@@ -298,7 +290,13 @@ export default {
   },
 
   methods: {
+    fillInput(clickedTicker) {
+      this.ticker = clickedTicker;
+    },
     add() {
+      if (!this.ticker) {
+        return;
+      }
       const currentTicker = {
         name: this.ticker,
         price: "-",
@@ -315,6 +313,7 @@ export default {
         this.updateTicker(currentTicker.name, newPrice);
       });
     },
+
     validateTicker(tickerToValidate) {
       return this.tickers.filter((t) => t.name === tickerToValidate.name);
     },
