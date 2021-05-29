@@ -46,16 +46,19 @@
                 />
               </div>
               <div
-                v-if="ticker"
+                v-if="appropriateTickersToEnter?.length"
                 class="flex bg-white shadow-md p-1 rounded-md shadow-md flex-wrap"
               >
                 <span
-                  v-for="symbol in showAppropriteTickersToEnter"
-                  @click="fillInput(symbol)"
-                  :key="symbol.index"
+                  v-for="coinSymbol in appropriateTickersToEnter"
+                  @click="
+                    fillInput(coinSymbol);
+                    add();
+                  "
+                  :key="coinSymbol.index"
                   class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
                 >
-                  {{ symbol }}
+                  {{ coinSymbol }}
                 </span>
               </div>
               <div v-if="invalidTicker" class="text-sm text-red-600">
@@ -254,13 +257,14 @@ export default {
     window.removeEventListener("resize", this.calculateMaxGraphElements);
   },
   computed: {
-    showAppropriteTickersToEnter() {
+    appropriateTickersToEnter() {
       if (!this.ticker) {
         return;
       }
-      return Array.from(this.listOfCoinsSymbols)
+      let filteredCoinsSymbols = Array.from(this.listOfCoinsSymbols)
         .filter((coinSymbol) => coinSymbol.includes(this.ticker))
         .slice(0, 4);
+      return filteredCoinsSymbols;
     },
     startIndex() {
       return (this.page - 1) * 6;
@@ -310,6 +314,7 @@ export default {
     fillInput(clickedTicker) {
       this.ticker = clickedTicker;
     },
+
     add() {
       if (!this.ticker) {
         return;
@@ -323,6 +328,8 @@ export default {
         this.invalidTicker = false;
       } else {
         this.invalidTicker = true;
+        this.fillInput(currentTicker.name);
+        return;
       }
       this.ticker = "";
       this.filter = "";
@@ -338,7 +345,9 @@ export default {
     },
 
     validateTicker(tickerToValidate) {
-      return this.tickers.filter((t) => t.name === tickerToValidate.name);
+      return this.tickers.filter(
+        (t) => t.name?.toLowerCase() === tickerToValidate.name?.toLowerCase()
+      );
     },
 
     updateTicker(tickerName, price) {
@@ -368,6 +377,9 @@ export default {
     },
   },
   watch: {
+    ticker() {
+      this.invalidTicker ? (this.invalidTicker = false) : this.invalidTicker;
+    },
     selectedTicker() {
       this.graph = [];
       this.$nextTick().then(this.calculateMaxGraphElements);
