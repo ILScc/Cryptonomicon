@@ -33,8 +33,11 @@
           :invalidTicker="invalidTicker"
         />
         <hr class="w-full border-t border-gray-600 my-4" />
+
         <app-filter :tickers="tickers" @paginated-tickers="setTickersToShow" />
+
         <hr class="w-full border-t border-gray-600 my-4" />
+
         <tickers-list
           @select-ticker="handleSelect"
           @delete-ticker="handleDeleteTicker"
@@ -43,6 +46,7 @@
           :selectedTicker="selectedTicker"
         />
         <hr class="w-full border-t border-gray-600 my-4" />
+
         <app-graph
           @close-graph="selectedTicker = null"
           @max-graph-elements="fixGraph"
@@ -112,17 +116,9 @@ export default {
         price: "-",
       };
       this.validateTicker(currentTicker);
-      this.filter = "";
       subscribeToTicker(currentTicker.name, (newPrice) => {
         this.updateTicker(currentTicker.name, newPrice);
       });
-    },
-
-    setTickersToShow(paginatedTickers) {
-      this.tickersToShow = paginatedTickers;
-    },
-    handleSelect(ticker) {
-      this.selectedTicker = ticker;
     },
 
     validateTicker(tickerToValidate) {
@@ -136,6 +132,12 @@ export default {
         this.invalidTicker = true;
         return;
       }
+    },
+    setTickersToShow(paginatedTickers) {
+      this.tickersToShow = paginatedTickers;
+    },
+    handleSelect(ticker) {
+      this.selectedTicker = ticker;
     },
 
     updateTicker(tickerName, price) {

@@ -32,22 +32,29 @@
             {{ coinSymbol }}
           </span>
         </div>
-        <is-ticker-valid :invalidTicker="invalidTicker" />
+        <div v-if="invalidTicker" class="text-sm text-red-600">
+          Такой тикер уже добавлен
+        </div>
+        <div
+          v-if="filteredCoinsSymbols.length === 0"
+          class="text-sm text-red-600"
+        >
+          Такого тикера не существует
+        </div>
       </div>
     </div>
-    <add-button @click="add" />
+    <add-button :filteredCoinsSymbols="filteredCoinsSymbols" @click="add" />
   </section>
 </template>
 <script>
 import AddButton from "./AddButton.vue";
-import IsTickerValid from "./IsTickerValid.vue";
 export default {
   data() {
     return {
       ticker: "",
     };
   },
-  components: { AddButton, IsTickerValid },
+  components: { AddButton },
   props: {
     listOfCoinsSymbols: {
       type: Array,
@@ -55,6 +62,7 @@ export default {
     },
     invalidTicker: {
       type: Boolean,
+      required: true,
     },
   },
 
@@ -79,10 +87,12 @@ export default {
       if (!this.ticker) {
         return;
       }
-      let filteredCoinsSymbols = Array.from(this.listOfCoinsSymbols)
-        .filter((coinSymbol) => coinSymbol.includes(this.ticker))
-        .slice(0, 4);
-      return filteredCoinsSymbols;
+      return this.filteredCoinsSymbols.slice(0, 4);
+    },
+    filteredCoinsSymbols() {
+      return this.listOfCoinsSymbols.filter((coinSymbol) =>
+        coinSymbol.includes(this.ticker)
+      );
     },
   },
 };

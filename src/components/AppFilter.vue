@@ -61,7 +61,7 @@ export default {
     },
     filteredTickers() {
       return this.tickers.filter((ticker) =>
-        ticker.name?.includes(this.filter)
+        ticker.name?.toLowerCase().includes(this.filter.toLowerCase())
       );
     },
     paginatedTickers() {
