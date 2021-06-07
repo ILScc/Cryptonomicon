@@ -35,10 +35,7 @@
         <div v-if="invalidTicker" class="text-sm text-red-600">
           Такой тикер уже добавлен
         </div>
-        <div
-          v-if="filteredCoinsSymbols.length === 0"
-          class="text-sm text-red-600"
-        >
+        <div v-if="!filteredCoinsSymbols.length" class="text-sm text-red-600">
           Такого тикера не существует
         </div>
       </div>

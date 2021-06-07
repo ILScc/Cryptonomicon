@@ -28,7 +28,7 @@
       <div class="container">
         <add-ticker
           @change="invalidTicker = false"
-          @add-ticker="add"
+          @add-ticker="handleAddTicker"
           :listOfCoinsSymbols="listOfCoinsSymbols"
           :invalidTicker="invalidTicker"
         />
@@ -107,7 +107,7 @@ export default {
   },
 
   methods: {
-    add(ticker) {
+    handleAddTicker(ticker) {
       const currentTicker = {
         name: ticker,
         price: "-",

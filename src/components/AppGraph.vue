@@ -9,6 +9,7 @@
     >
       <div
         v-for="(bar, idx) in normallizedGraph"
+        ref="graphElement"
         :key="idx"
         :style="{ height: `${bar}%` }"
         class="bg-purple-800 border w-10"
@@ -75,7 +76,8 @@ export default {
       if (!this.$refs.graph) {
         return;
       }
-      this.maxGraphElements = this.$refs.graph.clientWidth / 38;
+      this.maxGraphElements =
+        this.$refs.graph.clientWidth / this.$refs.graphElement?.clientWidth;
     },
   },
   computed: {
