@@ -1,9 +1,9 @@
 <template>
   <button
-    :disabled="filteredCoinsSymbols.length === 0"
+    :disabled="isDisabled"
     :class="{
-      'opacity-50 ': filteredCoinsSymbols.length === 0,
-      'hover:bg-gray-700': filteredCoinsSymbols.length,
+      'opacity-50 ': isDisabled,
+      'hover:bg-gray-700': isHoverable,
     }"
     @click="$emit('click')"
     type="button"
@@ -30,9 +30,26 @@ export default {
     click: null,
   },
   props: {
+    ticker: {
+      type: String,
+      required: true,
+    },
     filteredCoinsSymbols: {
       type: Array,
       required: true,
+    },
+  },
+  computed: {
+    checkInput() {
+      return this.filteredCoinsSymbols.filter((t) => t === this.ticker);
+    },
+    isDisabled() {
+      return (
+        this.filteredCoinsSymbols.length === 0 || this.checkInput.length === 0
+      );
+    },
+    isHoverable() {
+      return this.filteredCoinsSymbols.length && this.ticker.length;
     },
   },
 };

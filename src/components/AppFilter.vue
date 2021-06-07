@@ -40,16 +40,19 @@ export default {
     "paginated-tickers": (value) => typeof value === "object",
   },
   mounted() {
-    this.$emit("paginated-tickers", this.paginatedTickers);
+    this.sendPaginatedTickers();
   },
   methods: {
+    sendPaginatedTickers() {
+      this.$emit("paginated-tickers", this.paginatedTickers);
+    },
     handleNextPage() {
       this.page = this.page + 1;
-      this.$emit("paginated-tickers", this.paginatedTickers);
+      this.sendPaginatedTickers();
     },
     handlePrevPage() {
       this.page = this.page - 1;
-      this.$emit("paginated-tickers", this.paginatedTickers);
+      this.sendPaginatedTickers();
     },
   },
   computed: {
@@ -83,12 +86,12 @@ export default {
       this.page = 1;
     },
     filteredTickers() {
-      this.$emit("paginated-tickers", this.paginatedTickers);
+      this.sendPaginatedTickers();
     },
     paginatedTickers() {
       if (this.paginatedTickers.length === 0 && this.page > 1) {
         this.page -= 1;
-        this.$emit("paginated-tickers", this.paginatedTickers);
+        this.sendPaginatedTickers();
       }
     },
     pageStateOptions(value) {

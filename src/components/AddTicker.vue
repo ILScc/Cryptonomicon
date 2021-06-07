@@ -43,7 +43,11 @@
         </div>
       </div>
     </div>
-    <add-button :filteredCoinsSymbols="filteredCoinsSymbols" @click="add" />
+    <add-button
+      :filteredCoinsSymbols="filteredCoinsSymbols"
+      :ticker="ticker"
+      @click="add"
+    />
   </section>
 </template>
 <script>
@@ -83,16 +87,16 @@ export default {
     },
   },
   computed: {
+    filteredCoinsSymbols() {
+      return this.listOfCoinsSymbols.filter((coinSymbol) =>
+        coinSymbol.includes(this.ticker)
+      );
+    },
     appropriateTickersToEnter() {
       if (!this.ticker) {
         return;
       }
       return this.filteredCoinsSymbols.slice(0, 4);
-    },
-    filteredCoinsSymbols() {
-      return this.listOfCoinsSymbols.filter((coinSymbol) =>
-        coinSymbol.includes(this.ticker)
-      );
     },
   },
 };

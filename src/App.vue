@@ -36,8 +36,6 @@
 
         <app-filter :tickers="tickers" @paginated-tickers="setTickersToShow" />
 
-        <hr class="w-full border-t border-gray-600 my-4" />
-
         <tickers-list
           @select-ticker="handleSelect"
           @delete-ticker="handleDeleteTicker"
@@ -45,7 +43,6 @@
           :tickersToShow="tickersToShow"
           :selectedTicker="selectedTicker"
         />
-        <hr class="w-full border-t border-gray-600 my-4" />
 
         <app-graph
           @close-graph="selectedTicker = null"
