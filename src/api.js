@@ -1,5 +1,6 @@
 const API_KEY =
   "05b70e141ac3139ce1d7f82c858b450549bfa59a896f1b4782ba72a69e7bfafd";
+
 const tickersHandlers = new Map();
 
 const socket = new WebSocket(
@@ -7,11 +8,26 @@ const socket = new WebSocket(
 );
 
 const AGGREGATE_INDEX = "5";
+// const invalidTickers = new Set();
 
 socket.addEventListener("message", (e) => {
-  const { TYPE: type, FROMSYMBOL: currency, PRICE: newPrice } = JSON.parse(
-    e.data
-  );
+  const {
+    TYPE: type,
+    FROMSYMBOL: currency,
+    PRICE: newPrice,
+    MESSAGE: message,
+    PARAMETER: parameter,
+  } = JSON.parse(e.data);
+  if (message === "INVALID_SUB") {
+    const mapKeys = tickersHandlers.keys();
+    const invalidTickers = Array.from(mapKeys).filter((key) =>
+      parameter.includes(key)
+    );
+    invalidTickers.forEach((t) => {
+      listOfInvalidTickers.push(t);
+    });
+  }
+
   if (type !== AGGREGATE_INDEX || newPrice === undefined) {
     return;
   }
@@ -58,6 +74,8 @@ export const loadAllCoins = async () => {
   const allCoins = await coinsData.json();
   return allCoins.Data;
 };
+
+export const listOfInvalidTickers = [];
 
 export const subscribeToTicker = (ticker, cb) => {
   const subscribers = tickersHandlers.get(ticker) || [];

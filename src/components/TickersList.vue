@@ -2,12 +2,13 @@
   <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
     <div
       v-for="ticker of tickersToShow"
-      :key="ticker.name"
+      :key="ticker.idx"
       @click="select(ticker)"
       :class="{
-        'border-4': selectedTicker === ticker,
+        'border-red-500 border-2': isTickerValid(ticker),
+        'border-4 border-purple-800': selectedTicker === ticker,
       }"
-      class="bg-white overflow-hidden shadow rounded-lg border-purple-800 border-solid cursor-pointer"
+      class="bg-white overflow-hidden shadow rounded-lg border-solid cursor-pointer"
     >
       <div class="px-4 py-5 sm:p-6 text-center">
         <dt class="text-sm font-medium text-gray-500 truncate">
@@ -32,9 +33,8 @@ export default {
     DeleteTicker,
   },
   props: {
-    tickers: {
+    listOfInvalidTickers: {
       type: Array,
-      required: true,
     },
     tickersToShow: {
       type: Array,
@@ -54,6 +54,9 @@ export default {
         return price;
       }
       return price > 1 ? price.toFixed(2) : price.toPrecision(2);
+    },
+    isTickerValid(ticker) {
+      return this.listOfInvalidTickers.indexOf(ticker.name) !== -1;
     },
   },
 };

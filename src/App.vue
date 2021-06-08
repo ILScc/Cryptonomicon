@@ -39,6 +39,7 @@
         <tickers-list
           @select-ticker="handleSelect"
           @delete-ticker="handleDeleteTicker"
+          :listOfInvalidTickers="listOfInvalidTickers"
           :tickers="tickers"
           :tickersToShow="tickersToShow"
           :selectedTicker="selectedTicker"
@@ -56,7 +57,12 @@
 </template>
 
 <script>
-import { loadAllCoins, subscribeToTicker, unsubscribeFromTicker } from "./api";
+import {
+  loadAllCoins,
+  subscribeToTicker,
+  unsubscribeFromTicker,
+  listOfInvalidTickers,
+} from "./api";
 import AddTicker from "./components/AddTicker.vue";
 import AppGraph from "./components/AppGraph.vue";
 import AppFilter from "./components/AppFilter.vue";
@@ -70,7 +76,9 @@ export default {
       graph: [],
       tickersToShow: [],
 
+      listOfInvalidTickers: listOfInvalidTickers,
       listOfCoinsSymbols: [],
+
       selectedTicker: null,
 
       invalidTicker: false,
