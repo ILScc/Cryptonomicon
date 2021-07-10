@@ -32,7 +32,7 @@
             {{ coinSymbol }}
           </span>
         </div>
-        <div v-if="invalidTicker" class="text-sm text-red-600">
+        <div v-if="inappropriateTicker" class="text-sm text-red-600">
           Такой тикер уже добавлен
         </div>
       </div>
@@ -54,7 +54,7 @@ export default {
       type: Array,
       required: false,
     },
-    invalidTicker: {
+    inappropriateTicker: {
       type: Boolean,
       required: true,
     },

@@ -8,7 +8,6 @@ const socket = new WebSocket(
 );
 
 const AGGREGATE_INDEX = "5";
-// const invalidTickers = new Set();
 
 socket.addEventListener("message", (e) => {
   const {
@@ -18,15 +17,14 @@ socket.addEventListener("message", (e) => {
     MESSAGE: message,
     PARAMETER: parameter,
   } = JSON.parse(e.data);
+
   if (message === "INVALID_SUB") {
-    const mapKeys = tickersHandlers.keys();
-    const invalidTickers = Array.from(mapKeys).filter((key) =>
-      parameter.includes(key)
+    const invalidTicker = Array.from(tickersHandlers.keys()).find((t) =>
+      parameter.includes(t)
     );
-    invalidTickers.forEach((t) => {
-      listOfInvalidTickers.push(t);
-    });
+    sessionStorage.setItem(invalidTicker, invalidTicker);
   }
+  //TODO:fixthis shit
 
   if (type !== AGGREGATE_INDEX || newPrice === undefined) {
     return;
@@ -74,8 +72,6 @@ export const loadAllCoins = async () => {
   const allCoins = await coinsData.json();
   return allCoins.Data;
 };
-
-export const listOfInvalidTickers = [];
 
 export const subscribeToTicker = (ticker, cb) => {
   const subscribers = tickersHandlers.get(ticker) || [];

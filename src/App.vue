@@ -27,10 +27,10 @@
       </div> -->
       <div class="container">
         <add-ticker
-          @change="invalidTicker = false"
+          @change="inappropriateTicker = false"
           @add-ticker="handleAddTicker"
           :listOfCoinsSymbols="listOfCoinsSymbols"
-          :invalidTicker="invalidTicker"
+          :inappropriateTicker="inappropriateTicker"
         />
         <hr class="w-full border-t border-gray-600 my-4" />
 
@@ -39,10 +39,9 @@
         <tickers-list
           @select-ticker="handleSelect"
           @delete-ticker="handleDeleteTicker"
-          :listOfInvalidTickers="listOfInvalidTickers"
-          :tickers="tickers"
           :tickersToShow="tickersToShow"
           :selectedTicker="selectedTicker"
+          :invalidTicker="invalidTicker"
         />
 
         <app-graph
@@ -57,12 +56,7 @@
 </template>
 
 <script>
-import {
-  loadAllCoins,
-  subscribeToTicker,
-  unsubscribeFromTicker,
-  listOfInvalidTickers,
-} from "./api";
+import { loadAllCoins, subscribeToTicker, unsubscribeFromTicker } from "./api";
 import AddTicker from "./components/AddTicker.vue";
 import AppGraph from "./components/AppGraph.vue";
 import AppFilter from "./components/AppFilter.vue";
@@ -76,12 +70,13 @@ export default {
       graph: [],
       tickersToShow: [],
 
-      listOfInvalidTickers: listOfInvalidTickers,
       listOfCoinsSymbols: [],
 
       selectedTicker: null,
 
       invalidTicker: false,
+
+      inappropriateTicker: false,
     };
   },
 
@@ -120,10 +115,19 @@ export default {
         name: ticker,
         price: "-",
       };
+      this.checkInvalidTicker(ticker);
       this.validateTicker(currentTicker);
       subscribeToTicker(currentTicker.name, (newPrice) => {
         this.updateTicker(currentTicker.name, newPrice);
       });
+    },
+
+    checkInvalidTicker(ticker) {
+      setTimeout(() => {
+        localStorage.getItem(ticker)
+          ? (this.invalidTicker = true)
+          : (this.invalidTicker = false);
+      }, 2000);
     },
 
     validateTicker(tickerToValidate) {
@@ -132,9 +136,9 @@ export default {
       );
       if (!filteredTickers.length) {
         this.tickers = [...this.tickers, tickerToValidate];
-        this.invalidTicker = false;
+        this.inappropriateTicker = false;
       } else {
-        this.invalidTicker = true;
+        this.inappropriateTicker = true;
         return;
       }
     },

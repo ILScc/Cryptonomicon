@@ -54,6 +54,7 @@ export default {
   mounted() {
     window.addEventListener("resize", this.calculateMaxGraphElements);
   },
+
   beforeUnmount() {
     window.removeEventListener("resize", this.calculateMaxGraphElements);
   },
@@ -97,7 +98,7 @@ export default {
   },
   watch: {
     selectedTicker() {
-      this.$nextTick().then(this.calculateMaxGraphElements);
+      this.calculateMaxGraphElements;
     },
 
     limitOfElements() {

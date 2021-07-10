@@ -1,11 +1,12 @@
 <template v-if="tickers.length">
   <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
     <div
-      v-for="ticker of tickersToShow"
-      :key="ticker.idx"
+      v-for="(ticker, idx) in tickersToShow"
+      :key="idx"
       @click="select(ticker)"
       :class="{
-        'border-red-500 border-2': isTickerValid(ticker),
+        'border-red-500 border-2':
+          checkInvalidTicker(ticker.name) || invalidTicker === ticker.name,
         'border-4 border-purple-800': selectedTicker === ticker,
       }"
       class="bg-white overflow-hidden shadow rounded-lg border-solid cursor-pointer"
@@ -32,10 +33,13 @@ export default {
   components: {
     DeleteTicker,
   },
+  data() {
+    return {
+      invalidTickers: [],
+    };
+  },
+
   props: {
-    listOfInvalidTickers: {
-      type: Array,
-    },
     tickersToShow: {
       type: Array,
       required: true,
@@ -44,8 +48,17 @@ export default {
       type: Object,
       required: false,
     },
+    invalidTicker: {
+      type: Boolean,
+      required: true,
+    },
   },
+
   methods: {
+    checkInvalidTicker(tickerName) {
+      const invalidTicker = sessionStorage.getItem(tickerName);
+      return invalidTicker === tickerName;
+    },
     select(ticker) {
       this.$emit("select-ticker", ticker);
     },
@@ -54,9 +67,6 @@ export default {
         return price;
       }
       return price > 1 ? price.toFixed(2) : price.toPrecision(2);
-    },
-    isTickerValid(ticker) {
-      return this.listOfInvalidTickers.indexOf(ticker.name) !== -1;
     },
   },
 };
