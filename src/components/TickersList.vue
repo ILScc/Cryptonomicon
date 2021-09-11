@@ -9,7 +9,14 @@
           checkInvalidTicker(ticker.name) || invalidTicker === ticker.name,
         'border-4 border-purple-800': selectedTicker === ticker,
       }"
-      class="bg-white overflow-hidden shadow rounded-lg border-solid cursor-pointer"
+      class="
+        bg-white
+        overflow-hidden
+        shadow
+        rounded-lg
+        border-solid
+        cursor-pointer
+      "
     >
       <div class="px-4 py-5 sm:p-6 text-center">
         <dt class="text-sm font-medium text-gray-500 truncate">

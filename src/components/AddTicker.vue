@@ -12,7 +12,16 @@
             type="text"
             name="wallet"
             id="wallet"
-            class="block w-full pr-10 border-gray-300 text-gray-900 focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm rounded-md"
+            class="
+              block
+              w-full
+              pr-10
+              border-gray-300
+              text-gray-900
+              focus:outline-none focus:ring-gray-500 focus:border-gray-500
+              sm:text-sm
+              rounded-md
+            "
             placeholder="Например DOGE"
           />
         </div>
@@ -27,7 +36,18 @@
               add();
             "
             :key="coinSymbol.index"
-            class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
+            class="
+              inline-flex
+              items-center
+              px-2
+              m-1
+              rounded-md
+              text-xs
+              font-medium
+              bg-gray-300
+              text-gray-800
+              cursor-pointer
+            "
           >
             {{ coinSymbol }}
           </span>
