@@ -85,6 +85,7 @@ export default {
     normallizedGraph() {
       const maxValue = Math.max(...this.graph);
       const minValue = Math.min(...this.graph);
+
       if (minValue === maxValue) {
         return this.graph.map(() => 50);
       }

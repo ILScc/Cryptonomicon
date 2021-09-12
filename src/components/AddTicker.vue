@@ -26,11 +26,11 @@
           />
         </div>
         <div
-          v-if="appropriateTickersToEnter?.length"
+          v-if="suggestedTickers?.length"
           class="flex bg-white shadow-md p-1 rounded-md flex-wrap"
         >
           <span
-            v-for="coinSymbol in appropriateTickersToEnter"
+            v-for="coinSymbol in suggestedTickers"
             @click="
               fillInput(coinSymbol);
               add();
@@ -52,7 +52,7 @@
             {{ coinSymbol }}
           </span>
         </div>
-        <div v-if="inappropriateTicker" class="text-sm text-red-600">
+        <div v-if="invalidTicker" class="text-sm text-red-600">
           Такой тикер уже добавлен
         </div>
       </div>
@@ -74,7 +74,7 @@ export default {
       type: Array,
       required: false,
     },
-    inappropriateTicker: {
+    invalidTicker: {
       type: Boolean,
       required: true,
     },
@@ -102,7 +102,7 @@ export default {
         coinSymbol.includes(this.ticker)
       );
     },
-    appropriateTickersToEnter() {
+    suggestedTickers() {
       if (!this.ticker) {
         return;
       }

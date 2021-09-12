@@ -5,8 +5,7 @@
       :key="idx"
       @click="select(ticker)"
       :class="{
-        'border-red-500 border-2':
-          checkInvalidTicker(ticker.name) || invalidTicker === ticker.name,
+        // TODO:
         'border-4 border-purple-800': selectedTicker === ticker,
       }"
       class="
@@ -55,17 +54,9 @@ export default {
       type: Object,
       required: false,
     },
-    invalidTicker: {
-      type: Boolean,
-      required: true,
-    },
   },
 
   methods: {
-    checkInvalidTicker(tickerName) {
-      const invalidTicker = sessionStorage.getItem(tickerName);
-      return invalidTicker === tickerName;
-    },
     select(ticker) {
       this.$emit("select-ticker", ticker);
     },

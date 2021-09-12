@@ -27,10 +27,10 @@
       </div> -->
       <div class="container">
         <add-ticker
-          @change="inappropriateTicker = false"
+          @change="invalidTicker = false"
           @add-ticker="handleAddTicker"
           :listOfCoinsSymbols="listOfCoinsSymbols"
-          :inappropriateTicker="inappropriateTicker"
+          :invalidTicker="invalidTicker"
         />
         <hr class="w-full border-t border-gray-600 my-4" />
 
@@ -41,7 +41,6 @@
           @delete-ticker="handleDeleteTicker"
           :tickersToShow="tickersToShow"
           :selectedTicker="selectedTicker"
-          :invalidTicker="invalidTicker"
         />
 
         <app-graph
@@ -75,8 +74,6 @@ export default {
       selectedTicker: null,
 
       invalidTicker: false,
-
-      inappropriateTicker: false,
     };
   },
 
@@ -102,10 +99,9 @@ export default {
       });
     }
     loadAllCoins().then((value) => {
-      const coinsSymbols = Object.values(value).map((obj) => {
+      this.listOfCoinsSymbols = Object.values(value).map((obj) => {
         return obj.Symbol;
       });
-      this.listOfCoinsSymbols = coinsSymbols;
     });
   },
 
@@ -115,30 +111,21 @@ export default {
         name: ticker,
         price: "-",
       };
-      this.checkInvalidTicker(ticker);
       this.validateTicker(currentTicker);
       subscribeToTicker(currentTicker.name, (newPrice) => {
         this.updateTicker(currentTicker.name, newPrice);
       });
     },
 
-    checkInvalidTicker(ticker) {
-      setTimeout(() => {
-        localStorage.getItem(ticker)
-          ? (this.invalidTicker = true)
-          : (this.invalidTicker = false);
-      }, 2000);
-    },
-
     validateTicker(tickerToValidate) {
-      const filteredTickers = this.tickers.filter(
+      const isTickerInvalid = this.tickers.find(
         (t) => t.name?.toLowerCase() === tickerToValidate.name?.toLowerCase()
       );
-      if (!filteredTickers.length) {
+      if (!isTickerInvalid) {
         this.tickers = [...this.tickers, tickerToValidate];
-        this.inappropriateTicker = false;
+        this.invalidTicker = false;
       } else {
-        this.inappropriateTicker = true;
+        this.invalidTicker = true;
         return;
       }
     },

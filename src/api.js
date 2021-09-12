@@ -22,9 +22,9 @@ socket.addEventListener("message", (e) => {
     const invalidTicker = Array.from(tickersHandlers.keys()).find((t) =>
       parameter.includes(t)
     );
-    sessionStorage.setItem(invalidTicker, invalidTicker);
+    console.log(invalidTicker);
+    console.dir(tickersHandlers);
   }
-  //TODO:fixthis shit
 
   if (type !== AGGREGATE_INDEX || newPrice === undefined) {
     return;

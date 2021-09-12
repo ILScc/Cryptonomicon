@@ -4,70 +4,19 @@
       Фильтр:
       <input v-model="filter" />
       <p>
-        <button
-          v-if="page > 1"
-          @click="handlePrevPage"
-          class="
-            mx-4
-            my-4
-            inline-flex
-            items-center
-            py-2
-            px-4
-            border border-transparent
-            shadow-sm
-            text-sm
-            leading-4
-            font-medium
-            rounded-full
-            text-white
-            bg-gray-600
-            hover:bg-gray-700
-            transition-colors
-            duration-300
-            focus:outline-none
-            focus:ring-2
-            focus:ring-offset-2
-            focus:ring-gray-500
-          "
-        >
-          Назад
-        </button>
-        <button
-          v-if="hasNextPage"
-          @click="handleNextPage"
-          class="
-            mx-4
-            my-4
-            inline-flex
-            items-center
-            py-2
-            px-4
-            border border-transparent
-            shadow-sm
-            text-sm
-            leading-4
-            font-medium
-            rounded-full
-            text-white
-            bg-gray-600
-            hover:bg-gray-700
-            transition-colors
-            duration-300
-            focus:outline-none
-            focus:ring-2
-            focus:ring-offset-2
-            focus:ring-gray-500
-          "
-        >
-          Вперед
-        </button>
+        <app-pagination
+          @next-page="handleNextPage"
+          @prev-page="handlePrevPage"
+          :filteredTickers="filteredTickers"
+        />
       </p>
     </div>
   </section>
 </template>
 <script>
+import AppPagination from "./AppPagination.vue";
 export default {
+  components: { AppPagination },
   data() {
     return {
       filter: "",
@@ -87,16 +36,16 @@ export default {
     this.sendPaginatedTickers();
   },
   methods: {
+    handleNextPage(page) {
+      this.page = page;
+      this.sendPaginatedTickers();
+    },
+    handlePrevPage(page) {
+      this.page = page;
+      this.sendPaginatedTickers();
+    },
     sendPaginatedTickers() {
       this.$emit("paginated-tickers", this.paginatedTickers);
-    },
-    handleNextPage() {
-      this.page = this.page + 1;
-      this.sendPaginatedTickers();
-    },
-    handlePrevPage() {
-      this.page = this.page - 1;
-      this.sendPaginatedTickers();
     },
   },
   computed: {
@@ -115,9 +64,6 @@ export default {
       return this.filteredTickers.slice(this.startIndex, this.endIndex);
     },
 
-    hasNextPage() {
-      return this.filteredTickers.length > this.endIndex;
-    },
     pageStateOptions() {
       return {
         filter: this.filter,
