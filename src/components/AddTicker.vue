@@ -12,22 +12,42 @@
             type="text"
             name="wallet"
             id="wallet"
-            class="block w-full pr-10 border-gray-300 text-gray-900 focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm rounded-md"
+            class="
+              block
+              w-full
+              pr-10
+              border-gray-300
+              text-gray-900
+              focus:outline-none focus:ring-gray-500 focus:border-gray-500
+              sm:text-sm
+              rounded-md
+            "
             placeholder="Например DOGE"
           />
         </div>
         <div
-          v-if="appropriateTickersToEnter?.length"
+          v-if="suggestedTickers?.length"
           class="flex bg-white shadow-md p-1 rounded-md flex-wrap"
         >
           <span
-            v-for="coinSymbol in appropriateTickersToEnter"
+            v-for="coinSymbol in suggestedTickers"
             @click="
               fillInput(coinSymbol);
               add();
             "
             :key="coinSymbol.index"
-            class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
+            class="
+              inline-flex
+              items-center
+              px-2
+              m-1
+              rounded-md
+              text-xs
+              font-medium
+              bg-gray-300
+              text-gray-800
+              cursor-pointer
+            "
           >
             {{ coinSymbol }}
           </span>
@@ -35,16 +55,9 @@
         <div v-if="invalidTicker" class="text-sm text-red-600">
           Такой тикер уже добавлен
         </div>
-        <div v-if="!filteredCoinsSymbols.length" class="text-sm text-red-600">
-          Такого тикера не существует
-        </div>
       </div>
     </div>
-    <add-button
-      :filteredCoinsSymbols="filteredCoinsSymbols"
-      :ticker="ticker"
-      @click="add"
-    />
+    <add-button @click="add" />
   </section>
 </template>
 <script>
@@ -89,7 +102,7 @@ export default {
         coinSymbol.includes(this.ticker)
       );
     },
-    appropriateTickersToEnter() {
+    suggestedTickers() {
       if (!this.ticker) {
         return;
       }

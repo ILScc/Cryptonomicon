@@ -54,6 +54,7 @@ export default {
   mounted() {
     window.addEventListener("resize", this.calculateMaxGraphElements);
   },
+
   beforeUnmount() {
     window.removeEventListener("resize", this.calculateMaxGraphElements);
   },
@@ -84,6 +85,7 @@ export default {
     normallizedGraph() {
       const maxValue = Math.max(...this.graph);
       const minValue = Math.min(...this.graph);
+
       if (minValue === maxValue) {
         return this.graph.map(() => 50);
       }
@@ -97,7 +99,7 @@ export default {
   },
   watch: {
     selectedTicker() {
-      this.$nextTick().then(this.calculateMaxGraphElements);
+      this.calculateMaxGraphElements;
     },
 
     limitOfElements() {

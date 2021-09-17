@@ -1,5 +1,6 @@
 const API_KEY =
   "05b70e141ac3139ce1d7f82c858b450549bfa59a896f1b4782ba72a69e7bfafd";
+
 const tickersHandlers = new Map();
 
 const socket = new WebSocket(
@@ -9,9 +10,22 @@ const socket = new WebSocket(
 const AGGREGATE_INDEX = "5";
 
 socket.addEventListener("message", (e) => {
-  const { TYPE: type, FROMSYMBOL: currency, PRICE: newPrice } = JSON.parse(
-    e.data
-  );
+  const {
+    TYPE: type,
+    FROMSYMBOL: currency,
+    PRICE: newPrice,
+    MESSAGE: message,
+    PARAMETER: parameter,
+  } = JSON.parse(e.data);
+
+  if (message === "INVALID_SUB") {
+    const invalidTicker = Array.from(tickersHandlers.keys()).find((t) =>
+      parameter.includes(t)
+    );
+    console.log(invalidTicker);
+    console.dir(tickersHandlers);
+  }
+
   if (type !== AGGREGATE_INDEX || newPrice === undefined) {
     return;
   }

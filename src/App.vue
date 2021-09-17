@@ -39,7 +39,6 @@
         <tickers-list
           @select-ticker="handleSelect"
           @delete-ticker="handleDeleteTicker"
-          :tickers="tickers"
           :tickersToShow="tickersToShow"
           :selectedTicker="selectedTicker"
         />
@@ -71,6 +70,7 @@ export default {
       tickersToShow: [],
 
       listOfCoinsSymbols: [],
+
       selectedTicker: null,
 
       invalidTicker: false,
@@ -99,10 +99,9 @@ export default {
       });
     }
     loadAllCoins().then((value) => {
-      const coinsSymbols = Object.values(value).map((obj) => {
+      this.listOfCoinsSymbols = Object.values(value).map((obj) => {
         return obj.Symbol;
       });
-      this.listOfCoinsSymbols = coinsSymbols;
     });
   },
 
@@ -119,10 +118,10 @@ export default {
     },
 
     validateTicker(tickerToValidate) {
-      const filteredTickers = this.tickers.filter(
+      const isTickerInvalid = this.tickers.find(
         (t) => t.name?.toLowerCase() === tickerToValidate.name?.toLowerCase()
       );
-      if (!filteredTickers.length) {
+      if (!isTickerInvalid) {
         this.tickers = [...this.tickers, tickerToValidate];
         this.invalidTicker = false;
       } else {
