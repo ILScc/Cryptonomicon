@@ -6,15 +6,17 @@
       @click="select(ticker)"
       :class="{
         // TODO:
-        'border-4 border-purple-800': selectedTicker === ticker,
+        'border-4': selectedTicker === ticker,
       }"
       class="
         bg-white
         overflow-hidden
         shadow
+        border-purple-800
         rounded-lg
         border-solid
         cursor-pointer
+        h-40
       "
     >
       <div class="px-4 py-5 sm:p-6 text-center">
