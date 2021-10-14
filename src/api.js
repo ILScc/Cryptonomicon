@@ -7,27 +7,57 @@ const socket = new WebSocket(
   `wss://streamer.cryptocompare.com/v2?api_key=${API_KEY}`
 );
 
+// function getBTC_USDPrice(invalidTicker, currency, convertCurrency, newPrice) {
+//   subscribeToTickerOnWs("BTC", "USD");
+//   subscribeToTickerOnWs(invalidTicker, "BTC");
+//   let BTC_USDrate = null;
+//   let invalidTicker_USDrate = null;
+//   if (currency === "BTC" && convertCurrency === "USD") {
+//     BTC_USDrate = newPrice;
+//   }
+//   if (currency === invalidTicker && convertCurrency === "BTC") {
+//     invalidTicker_USDrate = newPrice;
+//   }
+//   return BTC_USDrate * invalidTicker_USDrate;
+// }
+
 const AGGREGATE_INDEX = "5";
+const tickersToConvertFromBTCtoUSD = [];
 
 socket.addEventListener("message", (e) => {
   const {
     TYPE: type,
     FROMSYMBOL: currency,
+    TOSYMBOL: convertCurrency,
     PRICE: newPrice,
     MESSAGE: message,
     PARAMETER: parameter,
   } = JSON.parse(e.data);
 
   if (message === "INVALID_SUB") {
-    const invalidTicker = Array.from(tickersHandlers.keys()).find((t) =>
-      parameter.includes(t)
+    const invalidTicker = [...tickersHandlers.keys()].find((t) =>
+      parameter.split("~").find((tickerName) => tickerName === t)
     );
-    console.log(invalidTicker);
-    console.dir(tickersHandlers);
+    if (invalidTicker !== "BTC") {
+      subscribeToTickerOnWs("BTC", "USD");
+      subscribeToTickerOnWs(invalidTicker, "BTC");
+    }
+    const invalidHandlers = tickersHandlers.get(invalidTicker);
+    invalidHandlers.forEach((fn) => fn(null));
   }
 
   if (type !== AGGREGATE_INDEX || newPrice === undefined) {
     return;
+  }
+
+  if (convertCurrency === "BTC") {
+    tickersToConvertFromBTCtoUSD.push([currency, newPrice]);
+  }
+  if (currency === "BTC") {
+    tickersToConvertFromBTCtoUSD.forEach(([ticker, currentPrice]) => {
+      const newHandlers = tickersHandlers.get(ticker);
+      newHandlers.forEach((handler) => handler(newPrice * currentPrice));
+    });
   }
 
   const handlers = tickersHandlers.get(currency) ?? [];
@@ -51,10 +81,10 @@ function sendToWebSocket(message) {
   );
 }
 
-function subscribeToTickerOnWs(ticker) {
+function subscribeToTickerOnWs(ticker, currency) {
   sendToWebSocket({
     action: "SubAdd",
-    subs: [`5~CCCAGG~${ticker}~USD`],
+    subs: [`5~CCCAGG~${ticker}~${currency}`],
   });
 }
 
@@ -73,13 +103,13 @@ export const loadAllCoins = async () => {
   return allCoins.Data;
 };
 
-export const subscribeToTicker = (ticker, cb) => {
+export const subscribeToTicker = (ticker, currency, cb) => {
   const subscribers = tickersHandlers.get(ticker) || [];
   tickersHandlers.set(ticker, [...subscribers, cb]);
-  subscribeToTickerOnWs(ticker);
+  subscribeToTickerOnWs(ticker, currency);
 };
 
-export const unsubscribeFromTicker = (ticker) => {
+export const unsubscribeFromTicker = (ticker, currency) => {
   tickersHandlers.delete(ticker);
-  unsubscribeFromTickerOnWs(ticker);
+  unsubscribeFromTickerOnWs(ticker, currency);
 };
