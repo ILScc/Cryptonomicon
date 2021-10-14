@@ -27,7 +27,7 @@
       </div> -->
       <div class="container">
         <add-ticker
-          @change="invalidTicker = false"
+          @input="invalidTicker = false"
           @add-ticker="handleAddTicker"
           :listOfCoinsSymbols="listOfCoinsSymbols"
           :invalidTicker="invalidTicker"
@@ -93,7 +93,7 @@ export default {
     if (tickersData) {
       this.tickers = JSON.parse(tickersData);
       this.tickers.forEach((ticker) => {
-        subscribeToTicker(ticker.name, (newPrice) => {
+        subscribeToTicker(ticker.name, ticker.currency, (newPrice) => {
           this.updateTicker(ticker.name, newPrice);
         });
       });
@@ -110,25 +110,34 @@ export default {
       const currentTicker = {
         name: ticker,
         price: "-",
+        currency: "USD",
       };
-      this.validateTicker(currentTicker);
-      subscribeToTicker(currentTicker.name, (newPrice) => {
-        this.updateTicker(currentTicker.name, newPrice);
-      });
+      this.validateExistingTicker(currentTicker)
+        ? (this.tickers = [...this.tickers, currentTicker])
+        : null;
+
+      subscribeToTicker(
+        currentTicker.name,
+        currentTicker.currency,
+        (newPrice) => {
+          this.updateTicker(currentTicker.name, newPrice);
+        }
+      );
     },
 
-    validateTicker(tickerToValidate) {
-      const isTickerInvalid = this.tickers.find(
-        (t) => t.name?.toLowerCase() === tickerToValidate.name?.toLowerCase()
+    validateExistingTicker(currentTicker) {
+      const duplicatedTicker = this.tickers.find(
+        (existTicker) =>
+          currentTicker.name.toLowerCase() === existTicker.name.toLowerCase()
       );
-      if (!isTickerInvalid) {
-        this.tickers = [...this.tickers, tickerToValidate];
-        this.invalidTicker = false;
-      } else {
+      if (duplicatedTicker) {
+        console.log(duplicatedTicker);
         this.invalidTicker = true;
-        return;
+        return false;
       }
+      return true;
     },
+
     setTickersToShow(paginatedTickers) {
       this.tickersToShow = paginatedTickers;
     },
@@ -143,6 +152,7 @@ export default {
           if (t === this.selectedTicker) {
             this.graph.push(price);
           }
+
           t.price = price;
         });
     },
@@ -157,7 +167,7 @@ export default {
       if (this.selectedTicker === tickerToDelete) {
         this.selectedTicker = null;
       }
-      unsubscribeFromTicker(tickerToDelete.name);
+      unsubscribeFromTicker(tickerToDelete.name); //TODO: can't unsub from BTC tickers
     },
   },
   watch: {

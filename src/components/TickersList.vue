@@ -5,14 +5,13 @@
       :key="idx"
       @click="select(ticker)"
       :class="{
-        // TODO:
-        'border-4': selectedTicker === ticker,
+        'border-2  border-purple-800': selectedTicker === ticker,
+        'border-2 border-red-800': !ticker.price,
       }"
       class="
         bg-white
         overflow-hidden
         shadow
-        border-purple-800
         rounded-lg
         border-solid
         cursor-pointer
@@ -63,9 +62,10 @@ export default {
       this.$emit("select-ticker", ticker);
     },
     formatPrice(price) {
-      if (price === "-") {
-        return price;
+      if (price === "-" || !price) {
+        return "-";
       }
+
       return price > 1 ? price.toFixed(2) : price.toPrecision(2);
     },
   },
