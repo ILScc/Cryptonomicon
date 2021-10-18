@@ -53,7 +53,6 @@ export default {
     },
     selectedTicker: {
       type: Object,
-      required: false,
     },
   },
 

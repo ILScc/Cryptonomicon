@@ -65,7 +65,6 @@ export default {
   props: {
     selectedTicker: {
       type: Object,
-      required: true,
     },
     graph: {
       type: Array,
