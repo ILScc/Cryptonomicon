@@ -7,20 +7,6 @@ const socket = new WebSocket(
   `wss://streamer.cryptocompare.com/v2?api_key=${API_KEY}`
 );
 
-// function getBTC_USDPrice(invalidTicker, currency, convertCurrency, newPrice) {
-//   subscribeToTickerOnWs("BTC", "USD");
-//   subscribeToTickerOnWs(invalidTicker, "BTC");
-//   let BTC_USDrate = null;
-//   let invalidTicker_USDrate = null;
-//   if (currency === "BTC" && convertCurrency === "USD") {
-//     BTC_USDrate = newPrice;
-//   }
-//   if (currency === invalidTicker && convertCurrency === "BTC") {
-//     invalidTicker_USDrate = newPrice;
-//   }
-//   return BTC_USDrate * invalidTicker_USDrate;
-// }
-
 const AGGREGATE_INDEX = "5";
 const tickersToConvertFromBTCtoUSD = [];
 
@@ -55,8 +41,8 @@ socket.addEventListener("message", (e) => {
   }
   if (currency === "BTC") {
     tickersToConvertFromBTCtoUSD.forEach(([ticker, currentPrice]) => {
-      const newHandlers = tickersHandlers.get(ticker);
-      newHandlers.forEach((handler) => handler(newPrice * currentPrice));
+      const convertHandlers = tickersHandlers.get(ticker);
+      convertHandlers.forEach((handler) => handler(newPrice * currentPrice));
     });
   }
 

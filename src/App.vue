@@ -68,11 +68,8 @@ export default {
       tickers: [],
       graph: [],
       tickersToShow: [],
-
       listOfCoinsSymbols: [],
-
       selectedTicker: null,
-
       invalidTicker: false,
     };
   },
@@ -98,10 +95,12 @@ export default {
         });
       });
     }
-    loadAllCoins().then((value) => {
-      this.listOfCoinsSymbols = Object.values(value).map((obj) => {
-        return obj.Symbol;
-      });
+    loadAllCoins().then((cryptosDescriptions) => {
+      this.listOfCoinsSymbols = Object.values(cryptosDescriptions).map(
+        (cryptos) => {
+          return cryptos.Symbol;
+        }
+      );
     });
   },
 
@@ -113,8 +112,8 @@ export default {
         currency: "USD",
       };
       this.validateExistingTicker(currentTicker)
-        ? (this.tickers = [...this.tickers, currentTicker])
-        : null;
+        ? null
+        : (this.tickers = [...this.tickers, currentTicker]);
 
       subscribeToTicker(
         currentTicker.name,
@@ -126,16 +125,16 @@ export default {
     },
 
     validateExistingTicker(currentTicker) {
+      const tickerAlreadyExists = true;
       const duplicatedTicker = this.tickers.find(
-        (existTicker) =>
-          currentTicker.name.toLowerCase() === existTicker.name.toLowerCase()
+        (existingTicker) =>
+          currentTicker.name.toLowerCase() === existingTicker.name.toLowerCase()
       );
       if (duplicatedTicker) {
-        console.log(duplicatedTicker);
         this.invalidTicker = true;
-        return false;
+        return tickerAlreadyExists;
       }
-      return true;
+      return !tickerAlreadyExists;
     },
 
     setTickersToShow(paginatedTickers) {
@@ -167,7 +166,7 @@ export default {
       if (this.selectedTicker === tickerToDelete) {
         this.selectedTicker = null;
       }
-      unsubscribeFromTicker(tickerToDelete.name); //TODO: can't unsub from BTC tickers
+      unsubscribeFromTicker(tickerToDelete.name); //TODO: can't unsub from converting to BTC tickers
     },
   },
   watch: {
