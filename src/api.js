@@ -3,6 +3,7 @@ const API_KEY =
 
 const tickersHandlers = new Map();
 const tickersToConvertFromBTCtoUSD = new Map();
+const existingConnections = new Map();
 
 const socket = new WebSocket(
   `wss://streamer.cryptocompare.com/v2?api_key=${API_KEY}`
@@ -53,7 +54,9 @@ function handleInvalidTicker(parameter) {
   }
 
   if (invalidTicker) {
-    subscribeToTickerOnWs("BTC", "USD");
+    if (existingConnections.get("BTC") !== "USD") {
+      subscribeToTickerOnWs("BTC", "USD");
+    }
     subscribeToTickerOnWs(invalidTicker, "BTC");
   }
 }
@@ -90,7 +93,7 @@ function subscribeToTickerOnWs(ticker, currency) {
     action: "SubAdd",
     subs: [`5~CCCAGG~${ticker}~${currency}`],
   });
-} // TODO: add flag to check current connection BTC - USD
+}
 
 function unsubscribeFromTickerOnWs(ticker, currency = "USD") {
   sendToWebSocket({
@@ -111,9 +114,13 @@ export const subscribeToTicker = (ticker, currency, cb) => {
   const subscribers = tickersHandlers.get(ticker) || [];
   tickersHandlers.set(ticker, [...subscribers, cb]);
   subscribeToTickerOnWs(ticker, currency);
+  existingConnections.set(ticker, currency);
 };
 
 export const unsubscribeFromTicker = (ticker) => {
+  if (ticker === "BTC" && tickersToConvertFromBTCtoUSD.size) {
+    return;
+  }
   tickersHandlers.delete(ticker);
   if ([...tickersToConvertFromBTCtoUSD.keys()].includes(ticker)) {
     tickersToConvertFromBTCtoUSD.delete(ticker);
@@ -121,4 +128,5 @@ export const unsubscribeFromTicker = (ticker) => {
     return;
   }
   unsubscribeFromTickerOnWs(ticker);
+  existingConnections.delete(ticker);
 };
