@@ -33,7 +33,7 @@ socket.addEventListener("message", (e) => {
     tickersToConvertFromBTCtoUSD.set(currency, newPrice);
     return;
   }
-  if (currency === "BTC") {
+  if (currency === "BTC" && tickersToConvertFromBTCtoUSD.size) {
     convertPrice(newPrice);
   }
 
@@ -42,12 +42,12 @@ socket.addEventListener("message", (e) => {
 });
 
 function handleInvalidTicker(parameter) {
+  const invalidTickerIdx = 2;
   const invalidTicker = [...tickersHandlers.keys()].find(
-    (t) => parameter.split("~")[2] === t
+    (t) => parameter.split("~")[invalidTickerIdx] === t
   );
 
   if (parameter.includes(`${invalidTicker}~BTC`)) {
-    unsubscribeFromTickerOnWs(invalidTicker, "BTC");
     const invalidHandlers = tickersHandlers.get(invalidTicker) ?? [];
     invalidHandlers.forEach((fn) => fn(null));
     return;
@@ -64,9 +64,9 @@ function handleInvalidTicker(parameter) {
 function convertPrice(newPrice) {
   [...tickersToConvertFromBTCtoUSD.entries()].forEach(
     ([ticker, currentPrice]) => {
-      const relativePrice = currentPrice * newPrice;
+      const convertedPrice = currentPrice * newPrice;
       const convertHandlers = tickersHandlers.get(ticker);
-      convertHandlers.forEach((handler) => handler(relativePrice));
+      convertHandlers.forEach((handler) => handler(convertedPrice));
     }
   );
 }
@@ -122,7 +122,7 @@ export const unsubscribeFromTicker = (ticker) => {
     return;
   }
   tickersHandlers.delete(ticker);
-  if ([...tickersToConvertFromBTCtoUSD.keys()].includes(ticker)) {
+  if (tickersToConvertFromBTCtoUSD.get(ticker)) {
     tickersToConvertFromBTCtoUSD.delete(ticker);
     unsubscribeFromTickerOnWs(ticker, "BTC");
     return;
