@@ -58,19 +58,18 @@ export default {
   beforeUnmount() {
     window.removeEventListener("resize", this.calculateMaxGraphElements);
   },
+  emits: {
+    "close-graph": null,
+    "max-graph-elements": (value) => typeof value === "number",
+  },
   props: {
     selectedTicker: {
       type: Object,
-      required: true,
     },
     graph: {
       type: Array,
       required: true,
     },
-  },
-  emits: {
-    "close-graph": null,
-    "max-graph-elements": (value) => typeof value === "number",
   },
   methods: {
     calculateMaxGraphElements() {

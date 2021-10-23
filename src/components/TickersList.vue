@@ -5,8 +5,8 @@
       :key="idx"
       @click="select(ticker)"
       :class="{
-        // TODO:
-        'border-4 border-purple-800': selectedTicker === ticker,
+        'border-2  border-purple-800': selectedTicker === ticker,
+        'border-2 border-red-800': !ticker.price,
       }"
       class="
         bg-white
@@ -15,6 +15,7 @@
         rounded-lg
         border-solid
         cursor-pointer
+        h-40
       "
     >
       <div class="px-4 py-5 sm:p-6 text-center">
@@ -52,7 +53,6 @@ export default {
     },
     selectedTicker: {
       type: Object,
-      required: false,
     },
   },
 
@@ -61,9 +61,10 @@ export default {
       this.$emit("select-ticker", ticker);
     },
     formatPrice(price) {
-      if (price === "-") {
-        return price;
+      if (price === "-" || !price) {
+        return "-";
       }
+
       return price > 1 ? price.toFixed(2) : price.toPrecision(2);
     },
   },

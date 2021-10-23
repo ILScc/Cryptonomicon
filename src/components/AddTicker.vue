@@ -63,26 +63,27 @@
 <script>
 import AddButton from "./AddButton.vue";
 export default {
-  data() {
-    return {
-      ticker: "",
-    };
+  emits: {
+    "add-ticker": (value) => typeof value === "string",
   },
-  components: { AddButton },
   props: {
     listOfCoinsSymbols: {
       type: Array,
-      required: false,
+      required: true,
     },
     invalidTicker: {
       type: Boolean,
       required: true,
     },
   },
+  components: { AddButton },
 
-  emits: {
-    "add-ticker": (value) => typeof value === "string",
+  data() {
+    return {
+      ticker: "",
+    };
   },
+
   methods: {
     fillInput(clickedTicker) {
       this.ticker = clickedTicker;

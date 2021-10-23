@@ -1,7 +1,7 @@
 <template>
   <button
     v-if="page > 1"
-    @click="handlePrevPage"
+    @click="goPrevPage"
     class="
       mx-4
       my-4
@@ -27,7 +27,7 @@
   </button>
   <button
     v-if="hasNextPage"
-    @click="handleNextPage"
+    @click="goNextPage"
     class="
       mx-4
       my-4
@@ -54,35 +54,35 @@
 </template>
 <script>
 export default {
-  data() {
-    return {
-      page: 1,
-    };
-  },
-  methods: {
-    handleNextPage() {
-      this.page = this.page + 1;
-      this.$emit("next-page", this.page);
-    },
-    handlePrevPage() {
-      this.page = this.page - 1;
-      this.$emit("prev-page", this.page);
-    },
-  },
-  computed: {
-    endIndex() {
-      return this.page * 6;
-    },
-    hasNextPage() {
-      return this.filteredTickers.length > this.endIndex;
-    },
-  },
   emits: {
     "next-page": (value) => typeof value === "number",
     "prev-page": (value) => typeof value === "number",
   },
   props: {
     filteredTickers: { type: Array, required: true },
+  },
+  data() {
+    return {
+      page: 1,
+    };
+  },
+  methods: {
+    goNextPage() {
+      this.page = this.page + 1;
+      this.$emit("next-page", this.page);
+    },
+    goPrevPage() {
+      this.page = this.page - 1;
+      this.$emit("prev-page", this.page);
+    },
+  },
+  computed: {
+    endIndex() {
+      return this.page * 6; //TODO: magic number
+    },
+    hasNextPage() {
+      return this.filteredTickers.length > this.endIndex;
+    },
   },
 };
 </script>

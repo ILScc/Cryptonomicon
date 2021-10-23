@@ -27,7 +27,7 @@
       </div> -->
       <div class="container">
         <add-ticker
-          @change="invalidTicker = false"
+          @input="invalidTicker = false"
           @add-ticker="handleAddTicker"
           :listOfCoinsSymbols="listOfCoinsSymbols"
           :invalidTicker="invalidTicker"
@@ -68,11 +68,8 @@ export default {
       tickers: [],
       graph: [],
       tickersToShow: [],
-
       listOfCoinsSymbols: [],
-
       selectedTicker: null,
-
       invalidTicker: false,
     };
   },
@@ -93,15 +90,17 @@ export default {
     if (tickersData) {
       this.tickers = JSON.parse(tickersData);
       this.tickers.forEach((ticker) => {
-        subscribeToTicker(ticker.name, (newPrice) => {
+        subscribeToTicker(ticker.name, ticker.currency, (newPrice) => {
           this.updateTicker(ticker.name, newPrice);
         });
       });
     }
-    loadAllCoins().then((value) => {
-      this.listOfCoinsSymbols = Object.values(value).map((obj) => {
-        return obj.Symbol;
-      });
+    loadAllCoins().then((cryptosDescriptions) => {
+      this.listOfCoinsSymbols = Object.values(cryptosDescriptions).map(
+        (cryptos) => {
+          return cryptos.Symbol;
+        }
+      );
     });
   },
 
@@ -110,25 +109,34 @@ export default {
       const currentTicker = {
         name: ticker,
         price: "-",
+        currency: "USD",
       };
-      this.validateTicker(currentTicker);
-      subscribeToTicker(currentTicker.name, (newPrice) => {
-        this.updateTicker(currentTicker.name, newPrice);
-      });
+      this.validateExistingTicker(currentTicker)
+        ? null
+        : (this.tickers = [...this.tickers, currentTicker]);
+
+      subscribeToTicker(
+        currentTicker.name,
+        currentTicker.currency,
+        (newPrice) => {
+          this.updateTicker(currentTicker.name, newPrice);
+        }
+      );
     },
 
-    validateTicker(tickerToValidate) {
-      const isTickerInvalid = this.tickers.find(
-        (t) => t.name?.toLowerCase() === tickerToValidate.name?.toLowerCase()
+    validateExistingTicker(currentTicker) {
+      const tickerAlreadyExists = true;
+      const duplicatedTicker = this.tickers.find(
+        (existingTicker) =>
+          currentTicker.name.toLowerCase() === existingTicker.name.toLowerCase()
       );
-      if (!isTickerInvalid) {
-        this.tickers = [...this.tickers, tickerToValidate];
-        this.invalidTicker = false;
-      } else {
+      if (duplicatedTicker) {
         this.invalidTicker = true;
-        return;
+        return tickerAlreadyExists;
       }
+      return !tickerAlreadyExists;
     },
+
     setTickersToShow(paginatedTickers) {
       this.tickersToShow = paginatedTickers;
     },
@@ -143,6 +151,7 @@ export default {
           if (t === this.selectedTicker) {
             this.graph.push(price);
           }
+
           t.price = price;
         });
     },
@@ -157,7 +166,7 @@ export default {
       if (this.selectedTicker === tickerToDelete) {
         this.selectedTicker = null;
       }
-      unsubscribeFromTicker(tickerToDelete.name);
+      unsubscribeFromTicker(tickerToDelete.name); //TODO: can't unsub from converting to BTC tickers
     },
   },
   watch: {
