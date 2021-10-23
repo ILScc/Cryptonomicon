@@ -1,74 +1,110 @@
 const API_KEY =
   "05b70e141ac3139ce1d7f82c858b450549bfa59a896f1b4782ba72a69e7bfafd";
-
-const tickersHandlers = new Map();
-const tickersToConvertFromBTCtoUSD = new Map();
-const existingConnections = new Map();
-
-const socket = new WebSocket(
-  `wss://streamer.cryptocompare.com/v2?api_key=${API_KEY}`
-);
-
 const AGGREGATE_INDEX = "5";
 
-socket.addEventListener("message", (e) => {
-  const {
-    TYPE: type,
-    FROMSYMBOL: currency,
-    TOSYMBOL: convertCurrency,
-    PRICE: newPrice,
-    MESSAGE: message,
-    PARAMETER: parameter,
-  } = JSON.parse(e.data);
+const tickersHandlers = new Map();
+const BTCtoUSDtickers = new Map();
+const existingConnections = new Map();
 
-  if (message === "INVALID_SUB") {
-    handleInvalidTicker(parameter);
-  }
+function createWS() {
+  const newSocket = new WebSocket(
+    `wss://streamer.cryptocompare.com/v2?api_key=${API_KEY}`
+  );
+  newSocket.addEventListener("message", (e) => {
+    const {
+      TYPE: type,
+      FROMSYMBOL: currency,
+      TOSYMBOL: convertCurrency,
+      PRICE: newPrice,
+      MESSAGE: message,
+      PARAMETER: parameter,
+    } = JSON.parse(e.data);
 
-  if (type !== AGGREGATE_INDEX || newPrice === undefined) {
-    return;
-  }
+    if (message === "INVALID_SUB") {
+      handleInvalidTicker(parameter);
+    }
 
-  if (convertCurrency === "BTC") {
-    tickersToConvertFromBTCtoUSD.set(currency, newPrice);
-    return;
-  }
-  if (currency === "BTC" && tickersToConvertFromBTCtoUSD.size) {
-    convertPrice(newPrice);
-  }
+    if (type !== AGGREGATE_INDEX || newPrice === undefined) {
+      return;
+    }
 
-  const handlers = tickersHandlers.get(currency) ?? [];
-  handlers.forEach((fn) => fn(newPrice));
+    if (convertCurrency === "BTC") {
+      BTCtoUSDtickers.set(currency, newPrice);
+      return;
+    }
+    if (currency === "BTC" && BTCtoUSDtickers.size) {
+      convertPrice(newPrice);
+    }
+    const handlers = tickersHandlers.get(currency) ?? [];
+    handlers.forEach((fn) => fn(newPrice));
+
+    localStorage.setItem(currency, newPrice);
+  });
+
+  newSocket.onopen = () => {
+    sessionStorage.setItem("sourcePage", true);
+  };
+  newSocket.onclose = () => {
+    sessionStorage.removeItem("sourcePage");
+  };
+  return newSocket;
+}
+
+let socket = createWS();
+const bc = new BroadcastChannel("cryptonomicon");
+
+bc.onmessage = ({ data: { type, ticker, currency } }) => {
+  if (type === "subscribe" && !tickersHandlers.has(ticker)) {
+    subscribeToTickerOnWs(ticker, currency);
+  }
+  if (
+    type === "unsubscribe" &&
+    (!tickersHandlers.has(ticker) || !BTCtoUSDtickers.has(ticker))
+  ) {
+    unsubscribeFromTickerOnWs(ticker);
+  }
+  if (type === "Connection expired" && !sessionStorage.getItem("sourcePage")) {
+    socket = createWS();
+    [...existingConnections.keys()].forEach((connection) => {
+      subscribeToTickerOnWs(connection);
+    });
+  }
+};
+
+window.addEventListener("beforeunload", () => {
+  if (sessionStorage.getItem("sourcePage"))
+    bc.postMessage({ type: "Connection expired" });
+});
+
+window.addEventListener("storage", ({ key: ticker, newValue: newPrice }) => {
+  const handlers = tickersHandlers.get(ticker) ?? [];
+  handlers.forEach((fn) => fn(+newPrice));
 });
 
 function handleInvalidTicker(parameter) {
   const invalidTickerIdx = 2;
-  const invalidTicker = [...tickersHandlers.keys()].find(
-    (t) => parameter.split("~")[invalidTickerIdx] === t
-  );
+  const invalidTicker = parameter.split("~")[invalidTickerIdx];
 
   if (parameter.includes(`${invalidTicker}~BTC`)) {
     const invalidHandlers = tickersHandlers.get(invalidTicker) ?? [];
     invalidHandlers.forEach((fn) => fn(null));
+    localStorage.setItem(invalidTicker, null);
     return;
   }
 
-  if (invalidTicker) {
-    if (existingConnections.get("BTC") !== "USD") {
-      subscribeToTickerOnWs("BTC", "USD");
-    }
-    subscribeToTickerOnWs(invalidTicker, "BTC");
+  if (!existingConnections.has("BTC")) {
+    subscribeToTickerOnWs("BTC", "USD");
   }
+  subscribeToTickerOnWs(invalidTicker, "BTC");
 }
 
 function convertPrice(newPrice) {
-  [...tickersToConvertFromBTCtoUSD.entries()].forEach(
-    ([ticker, currentPrice]) => {
-      const convertedPrice = currentPrice * newPrice;
-      const convertHandlers = tickersHandlers.get(ticker);
-      convertHandlers.forEach((handler) => handler(convertedPrice));
-    }
-  );
+  [...BTCtoUSDtickers.entries()].forEach(([ticker, currentPrice]) => {
+    const convertedPrice = currentPrice * newPrice;
+    const convertHandlers = tickersHandlers.get(ticker) ?? [];
+    convertHandlers.forEach((handler) => handler(convertedPrice));
+    localStorage.setItem(ticker, convertedPrice);
+  });
 }
 
 function sendToWebSocket(message) {
@@ -88,7 +124,7 @@ function sendToWebSocket(message) {
   );
 }
 
-function subscribeToTickerOnWs(ticker, currency) {
+function subscribeToTickerOnWs(ticker, currency = "USD") {
   sendToWebSocket({
     action: "SubAdd",
     subs: [`5~CCCAGG~${ticker}~${currency}`],
@@ -115,18 +151,20 @@ export const subscribeToTicker = (ticker, currency, cb) => {
   tickersHandlers.set(ticker, [...subscribers, cb]);
   subscribeToTickerOnWs(ticker, currency);
   existingConnections.set(ticker, currency);
+  bc.postMessage({ type: "subscribe", ticker: ticker, currency: currency });
 };
 
 export const unsubscribeFromTicker = (ticker) => {
-  if (ticker === "BTC" && tickersToConvertFromBTCtoUSD.size) {
+  if (ticker === "BTC" && BTCtoUSDtickers.size) {
     return;
+  }
+  if (BTCtoUSDtickers.get(ticker)) {
+    BTCtoUSDtickers.delete(ticker);
+    unsubscribeFromTickerOnWs(ticker, "BTC");
   }
   tickersHandlers.delete(ticker);
-  if (tickersToConvertFromBTCtoUSD.get(ticker)) {
-    tickersToConvertFromBTCtoUSD.delete(ticker);
-    unsubscribeFromTickerOnWs(ticker, "BTC");
-    return;
-  }
   unsubscribeFromTickerOnWs(ticker);
   existingConnections.delete(ticker);
+  localStorage.removeItem(ticker);
+  bc.postMessage({ type: "unsubscribe", ticker: ticker });
 };
