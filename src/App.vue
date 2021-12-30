@@ -95,13 +95,17 @@ export default {
         });
       });
     }
-    loadAllCoins().then((cryptosDescriptions) => {
-      this.listOfCoinsSymbols = Object.values(cryptosDescriptions).map(
-        (cryptos) => {
-          return cryptos.Symbol;
-        }
-      );
-    });
+    loadAllCoins()
+      .then((cryptosDescriptions) => {
+        this.listOfCoinsSymbols = Object.values(cryptosDescriptions).map(
+          (cryptos) => {
+            return cryptos.Symbol;
+          }
+        );
+      })
+      .catch((e) => {
+        console.error("Error loading coins", e);
+      });
   },
 
   methods: {

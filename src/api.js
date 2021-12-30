@@ -139,11 +139,15 @@ function unsubscribeFromTickerOnWs(ticker, currency = "USD") {
 }
 
 export const loadAllCoins = async () => {
-  const coinsData = await fetch(
-    "https://min-api.cryptocompare.com/data/all/coinlist?summary=true"
-  );
-  const allCoins = await coinsData.json();
-  return allCoins.Data;
+  try {
+    const coinsData = await fetch(
+      "https://min-api.cryptocompare.com/data/all/coinlist?summary=true"
+    );
+    const allCoins = await coinsData.json();
+    return allCoins.Data;
+  } catch (e) {
+    console.error("Error fetching coins", e);
+  }
 };
 
 export const subscribeToTicker = (ticker, currency, cb) => {
