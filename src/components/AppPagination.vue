@@ -78,7 +78,8 @@ export default {
   },
   computed: {
     endIndex() {
-      return this.page * 6; //TODO: magic number
+      const pagesToShow = 6;
+      return this.page * pagesToShow;
     },
     hasNextPage() {
       return this.filteredTickers.length > this.endIndex;

@@ -58,7 +58,7 @@ export default {
     filteredTickers() {
       return this.tickers.filter((ticker) =>
         ticker.name?.toLowerCase().includes(this.filter.toLowerCase())
-      );
+      ); //TODO: investigate why Vetur complaining here
     },
     paginatedTickers() {
       return this.filteredTickers.slice(this.startIndex, this.endIndex);
