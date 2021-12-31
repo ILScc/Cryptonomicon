@@ -170,7 +170,7 @@ export default {
       if (this.selectedTicker === tickerToDelete) {
         this.selectedTicker = null;
       }
-      unsubscribeFromTicker(tickerToDelete.name); //TODO: can't unsub from converting to BTC tickers
+      unsubscribeFromTicker(tickerToDelete.name);
     },
   },
   watch: {
